@@ -1,0 +1,57 @@
+---
+masterha001::ip_address: '192.168.3.200'
+db001::ip_address: '192.168.3.101'
+db002::ip_address: '192.168.3.102'
+db003::ip_address: '192.168.3.103'
+
+mysql_user::repl::username: 'replicator'
+mysql_user::mha::username: 'mha'
+
+# db{001,002,003}
+db::mysql_server::package_ensure: 'installed'
+db::mysql_server::root_password: "%{alias('mysql_user::root::password')}"
+db::mysql_server::manage_config_file: true
+db::mysql_server::remove_default_accounts: true
+db::mysql_server::restart: true
+db::mysql_server::override_options:
+  'mysqld':
+    'bind-address': '0.0.0.0'
+    'log-bin': 'mysql-bin'
+    'server-id': "%{alias('mysql_config::server_id')}"
+  'mysql':
+    'prompt': 'mysql(\U)>\\_'
+db::mha_node::user: "%{alias('mysql_user::mha::username')}"
+db::mha_node::password: "%{alias('mysql_user::mha::password')}"
+db::mha_node::repl_user: "%{alias('mysql_user::repl::username')}"
+db::mha_node::repl_password: "%{alias('mysql_user::repl::password')}"
+db::mha_node::manager: "%{alias('masterha001::ip_address')}"
+db::mha_node::nodes:
+  - hostname: "%{alias('db001::ip_address')}"
+    candidate_master: 1
+  - hostname: "%{alias('db002::ip_address')}"
+    candidate_master: 1
+  - hostname: "%{alias('db003::ip_address')}"
+    candidate_master: 1
+db::mha_node::ssh_key_type: 'ssh-rsa'
+db::mha_node::ssh_public_key: "%{alias('root::ssh_public_key')}"
+db::mha_node::ssh_private_key: "%{alias('root::ssh_private_key')}"
+db::restore_db::ensure: 'present'
+db::restore_db::master_host: "%{alias('db001::ip_address')}"
+db::restore_db::root_password: "%{alias('mysql_user::root::password')}"
+db::restore_db::repl_user: "%{alias('mysql_user::repl::username')}"
+db::restore_db::repl_password: "%{alias('mysql_user::repl::password')}"
+
+# masterha001
+masterha::mha_manager::version: '0.57-0'
+masterha::mha_manager::node_version: '0.57-0'
+masterha::mha_manager::script_ensure: present
+masterha::mha_manager::ssh_user: 'root'
+masterha::mha_app::nodes: "%{alias('db::mha_node::nodes')}"
+masterha::mha_app::user: "%{alias('mysql_user::mha::username')}"
+masterha::mha_app::password: "%{alias('mysql_user::mha::password')}"
+masterha::mha_app::repl_user: "%{alias('mysql_user::repl::username')}"
+masterha::mha_app::repl_password: "%{alias('mysql_user::repl::password')}"
+masterha::mha_app::ssh_user: 'root'
+masterha::mha_app::ssh_private_key_filename: 'id_mha'
+masterha::mha_app::ssh_private_key: "%{alias('root::ssh_private_key')}"
+masterha::mha_app::manage_daemon: true

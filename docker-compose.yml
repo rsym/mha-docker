@@ -1,0 +1,128 @@
+version: '2'
+services:
+
+  puppetserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.puppetserver
+    hostname: puppetserver
+    container_name: puppetserver
+    networks:
+      app_net:
+        ipv4_address: 192.168.3.210
+    ports:
+      - 22
+      - 8140
+    volumes:
+       - ./:/etc/puppetlabs/code/environments/development/
+       - ./hieradata:/etc/puppetlabs/puppet/hieradata/
+       - ./keys:/etc/puppetlabs/puppet/eyaml/
+    stdin_open: true
+    tty: true
+    privileged: true
+    working_dir: /etc/puppetlabs/code/environments/development/
+    environment:
+      - 'TZ=Japan'
+      - 'PUPPETSERVER_HOSTNAME=puppetserver'
+      - 'PUPPET_MASTERPORT=8140'
+      - 'AUTOSIGN=true'
+
+  db001:
+    build:
+      context: .
+      dockerfile: Dockerfile.puppetagent
+    hostname: db001
+    container_name: db001
+    networks:
+      app_net:
+        ipv4_address: 192.168.3.101
+    ports:
+      - 22
+      - 3306
+      - 8301
+      - 8500
+      - 8600
+    stdin_open: true
+    tty: true
+    privileged: true
+    environment:
+      - 'TZ=Japan'
+      - 'PATH=$PATH:/opt/puppetlabs/bin/'
+    command: /sbin/init
+
+  db002:
+    build:
+      context: .
+      dockerfile: Dockerfile.puppetagent
+    hostname: db002
+    container_name: db002
+    networks:
+      app_net:
+        ipv4_address: 192.168.3.102
+    ports:
+      - 22
+      - 3306
+      - 8301
+      - 8500
+      - 8600
+    stdin_open: true
+    tty: true
+    privileged: true
+    environment:
+      - 'TZ=Japan'
+      - 'PATH=$PATH:/opt/puppetlabs/bin/'
+    command: /sbin/init
+
+  db003:
+    build:
+      context: .
+      dockerfile: Dockerfile.puppetagent
+    hostname: db003
+    container_name: db003
+    networks:
+      app_net:
+        ipv4_address: 192.168.3.103
+    ports:
+      - 22
+      - 3306
+      - 8301
+      - 8500
+      - 8600
+    stdin_open: true
+    tty: true
+    privileged: true
+    environment:
+      - 'TZ=Japan'
+      - 'PATH=$PATH:/opt/puppetlabs/bin/'
+    command: /sbin/init
+
+  masterha001:
+    build:
+      context: .
+      dockerfile: Dockerfile.puppetagent
+    hostname: masterha001
+    container_name: masterha001
+    networks:
+      app_net:
+        ipv4_address: 192.168.3.200
+    ports:
+      - 22
+      - 3306
+      - 8301
+      - 8500
+      - 8600
+    stdin_open: true
+    tty: true
+    privileged: true
+    environment:
+      - 'TZ=Japan'
+      - 'PATH=$PATH:/opt/puppetlabs/bin/'
+    command: /sbin/init
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.3.0/24

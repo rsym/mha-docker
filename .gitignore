@@ -1,0 +1,10 @@
+.DS_store
+.bundle/
+.librarian/
+.manifests/
+.modules/
+.tmp/
+.resource_types/
+hieradata/*_secret.yaml
+keys/
+vendor/

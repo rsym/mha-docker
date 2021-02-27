@@ -1,0 +1,3 @@
+---
+mysql_config::server_id: 2
+db::set_slave::master_slave: 'slave'

@@ -1,0 +1,5 @@
+FROM puppet/puppetserver
+
+RUN mkdir /etc/puppetlabs/code/environments/development/
+ADD ./hiera.yaml /etc/puppetlabs/puppet/hiera.yaml
+RUN /opt/puppetlabs/bin/puppetserver gem install hiera-eyaml --no-document
